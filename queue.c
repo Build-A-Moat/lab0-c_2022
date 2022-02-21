@@ -217,8 +217,7 @@ void q_swap(struct list_head *head)
     struct list_head *cur = head->next;
     while (cur != head && cur->next != head) {
         struct list_head *next = cur->next;
-        list_del(cur);
-        list_add(cur, next);
+        list_move(cur, next);
         cur = cur->next;
     }
     // https://leetcode.com/problems/swap-nodes-in-pairs/
@@ -237,8 +236,7 @@ void q_reverse(struct list_head *head)
         return;
     struct list_head *cur = head->prev->prev, *last = head->prev;
     while (cur != head) {
-        list_del(cur);
-        list_add_tail(cur, head);
+        list_move_tail(cur, head);
         cur = last->prev;
     }
 }
