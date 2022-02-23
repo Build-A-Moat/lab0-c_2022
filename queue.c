@@ -212,7 +212,7 @@ bool q_delete_dup(struct list_head *head)
  */
 void q_swap(struct list_head *head)
 {
-    if (!head || list_is_singular(head))
+    if (!head || list_empty(head) || list_is_singular(head))
         return;
     struct list_head *cur = head->next;
     while (cur != head && cur->next != head) {
@@ -232,7 +232,7 @@ void q_swap(struct list_head *head)
  */
 void q_reverse(struct list_head *head)
 {
-    if (!head || list_is_singular(head))
+    if (!head || list_empty(head) || list_is_singular(head))
         return;
     struct list_head *cur = head->prev->prev, *last = head->prev;
     while (cur != head) {
