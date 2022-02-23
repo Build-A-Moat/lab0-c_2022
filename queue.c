@@ -169,7 +169,7 @@ bool q_delete_mid(struct list_head *head)
         slow = slow->next;
         fast = fast->next->next;
     }
-    struct list_head *middle = (slow->next == head) ? slow : slow->next;
+    struct list_head *middle = slow->next;
     list_del(middle);
     q_release_element(list_entry(middle, element_t, list));
     return true;
