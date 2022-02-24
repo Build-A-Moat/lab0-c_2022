@@ -246,7 +246,8 @@ struct list_head *merge(struct list_head *L1, struct list_head *L2)
     struct list_head *head = malloc(sizeof(struct list_head)), *L1_head = L1,
                      *L2_head = L2;
     INIT_LIST_HEAD(head);
-    for (L1 = L1->next, L2 = L2->next; L1 != L1_head && L2 != L2_head;) {
+    for (L1 = L1->next, L2 = L2->next;
+         !list_empty(L1_head) && !list_empty(L2_head);) {
         struct list_head *tmp =
             strcmp(list_entry(L1, element_t, list)->value,
                    list_entry(L2, element_t, list)->value) > 0
@@ -254,7 +255,8 @@ struct list_head *merge(struct list_head *L1, struct list_head *L2)
                 : L2;
         list_move_tail(tmp, head);
     }
-    L1 != L1_head ? list_splice(L1, head) : list_splice(L2, head);
+    list_empty(L1_head) ? list_splice_tail(L2_head, head)
+                        : list_splice_tail(L1_head, head);
     return head;
 }
 
