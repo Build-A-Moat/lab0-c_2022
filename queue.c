@@ -192,7 +192,7 @@ bool q_delete_dup(struct list_head *head)
     element_t *node, *safe;
     bool remove = false;
     list_for_each_entry_safe (node, safe, head, list) {
-        if (node->list.next != head && !strcmp(node->value, safe->value)) {
+        if (&safe->list != head && !strcmp(node->value, safe->value)) {
             remove = true;
             list_del(&node->list);
             q_release_element(node);
