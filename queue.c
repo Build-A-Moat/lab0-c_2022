@@ -241,42 +241,43 @@ void q_reverse(struct list_head *head)
     }
 }
 
-struct list_head *merge(struct list_head *L1, struct list_head *L2)
+struct list_head *merge_two_list(struct list_head *L1,
+                                 struct list_head *L2,
+                                 struct list_head *head)
 {
-    struct list_head *head = malloc(sizeof(struct list_head)), *L1_head = L1,
-                     *L2_head = L2;
+    struct list_head *tmp, *L1_last = L1->prev, *L2_last = L2->prev;
+    L1->prev->next = NULL;
+    L2->prev->next = NULL;
     INIT_LIST_HEAD(head);
-    for (L1 = L1->next, L2 = L2->next;
-         !list_empty(L1_head) && !list_empty(L2_head);) {
-        struct list_head *tmp =
-            strcmp(list_entry(L1, element_t, list)->value,
-                   list_entry(L2, element_t, list)->value) > 0
-                ? L1
-                : L2;
-        list_move_tail(tmp, head);
+    while (L1 && L2) {
+        if (strcmp(list_entry(L1, element_t, list)->value,
+                   list_entry(L2, element_t, list)->value) > 0) {
+            tmp = L2;
+            L2 = L2->next;
+            list_add_tail(tmp, head);
+        } else {
+            tmp = L1;
+            L1 = L1->next;
+            list_add_tail(tmp, head);
+        }
     }
-    list_empty(L1_head) ? list_splice_tail(L2_head, head)
-                        : list_splice_tail(L1_head, head);
-    return head;
-}
-
-struct list_head *mergesort(struct list_head *head)
-{
-    if (!head || list_empty(head) || list_is_singular(head))
-        return head;
-    struct list_head *middle = head, *fast = head;
-    while (fast->next != head && fast->next->next != head) {
-        middle = middle->next;
-        fast = fast->next->next;
+    struct list_head *result = head->next;
+    list_del_init(head);
+    if (!L1) {
+        L2->prev = L2_last;
+        L2_last->next = L2;
+        list_add_tail(head, L2);
+    } else {
+        L1->prev = L1_last;
+        L1_last->next = L1;
+        list_add_tail(head, L1);
     }
-    struct list_head *right = malloc(sizeof(struct list_head));
-    INIT_LIST_HEAD(right);
-    list_cut_position(right, middle, head->prev);
-    struct list_head *merge_left = mergesort(head);
-    struct list_head *merge_right = mergesort(right);
-    return merge(merge_left, merge_right);
+    for (struct list_head *node = head->next; !list_empty(head);
+         node = head->next) {
+        list_move_tail(node, result);
+    }
+    return result;
 }
-
 
 /*
  * Sort elements of queue in ascending order
@@ -285,5 +286,19 @@ struct list_head *mergesort(struct list_head *head)
  */
 void q_sort(struct list_head *head)
 {
-    mergesort(head);
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+    int size = q_size(head);
+    struct list_head *stack[size], *tmp = head->next;
+    for (int i = 0; tmp != head; tmp = head->next) {
+        list_del_init(tmp);
+        stack[i++] = tmp;
+    }
+    while (size > 1) {
+        for (int i = 0, j = size - 1; i < j; i++, j--) {
+            stack[i] = merge_two_list(stack[i], stack[j], head);
+        }
+        size = (size + 1) / 2;
+    }
+    list_add_tail(head, stack[0]);
 }
